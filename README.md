@@ -1,91 +1,76 @@
-# SilkCue — what changed
+# SilkCue ====[ UNDER CONSTRUCTION ]====
 
-## The app-breaking bug
-Your `state` object was missing a comma after `importing: false`, which is a
-JavaScript syntax error — the entire `<script>` block failed to parse, so the
-app never rendered anything at all. That's fixed.
+**Free, open-source, and privacy-first line learning for actors.**
 
-## Other fixes / improvements
-- **Icons**: `icon.svg` is now used everywhere — rasterized into real PNGs
-  (16/32/180/192/512px) and embedded directly in the HTML as the favicon,
-  apple-touch-icon, and PWA manifest icons. The old placeholder icon is gone.
-- **Background**: `background.jpg` is compressed and embedded as a subtle,
-  darkened backdrop behind the app (it sits behind a dark gradient so text
-  stays fully readable — matches the existing curtain/brass theme).
-- **Microphone permission on first launch**: the very first time someone
-  opens the app, they now see a short "Enable Microphone" screen *before*
-  anything else, so `getUserMedia` is requested up front instead of silently
-  failing or interrupting mid-rehearsal. Choosing "Not now" just skips it —
-  they can still use the manual "Done — next line" button, and can re-check
-  permission later from Settings → Microphone access.
-- **On-device fallback listening engine**: the app already used the
-  browser's built-in `SpeechRecognition` (Chrome/Edge/Safari) to listen for
-  lines. That API doesn't exist in Firefox, and it isn't private (audio is
-  sent to a cloud provider). I added a second engine that runs
-  **Whisper-tiny** entirely on-device via [transformers.js], recording with
-  the Web Audio API, detecting when you've stopped speaking the same way the
-  native engine does, then transcribing locally. It downloads once (~40MB)
-  and is cached by the browser for offline use after that. In **Settings**
-  you can choose:
-  - *Automatic* — uses the browser engine when available (fastest), falls
-    back to on-device otherwise
-  - *Browser (cloud)* — force the native engine
-  - *On-device (offline)* — force Whisper, even if the browser engine exists
-  (The engine-choice row only appears when both are actually available in
-  your browser.)
-- Fixed a few smaller consistency issues around the listening engine so
-  "restart listening", "skip line", and the various status banners all work
-  correctly with whichever engine is active.
+SilkCue is a single-file Progressive Web App (PWA) designed to be the ultimate digital scene partner. It reads the other characters' lines aloud, listens for yours, and keeps your rehearsal moving forward. Give it a shot and see if it beets using your flimsy paper script.
 
-[transformers.js]: https://github.com/xenova/transformers.js
+## The Main Juice
 
-## Installing as an app (not just a bookmark)
+### Interactive Rehearsal
+* **Auto-Cueing:** SilkCue uses Text-to-Speech to read the rest of the cast's lines and stage directions.
+* **Voice Recognition:** Speak your lines and the app automatically grades your accuracy and advances. 
+* **Dual Speech Engines:** 
+  * **Native (Cloud):** Uses your browser's built-in Web Speech API for fast, lightweight recognition.
+  * **On-Device (Offline):** Falls back to a local **Whisper-tiny** model via Transformers.js. This is a game-changer for **Firefox** users (which lacks native speech recognition) and anyone who wants total audio privacy. Your audio *never* leaves your device.
+* **Blind Recall Mode:** Black out your lines to test your memorization. The app will still listen and grade your accuracy.
+* **Smart Skip:** If your character is offstage for 2+ pages, SilkCue notices and offers to jump ahead so you don't waste time listening to scenes you aren't in.
 
-### Just double-click `SilkCue.html` (simplest)
-It's still one self-contained file — you can open it directly and it works
-fully offline (uploads, rehearsal, settings, both listening engines).
-- **iOS**: open it in Safari, tap Share → **Add to Home Screen**. It launches
-  full-screen, no browser chrome, with the theatre-mask icon.
-- **Android (Chrome)**: opening a local file gets you a bookmark shortcut,
-  not a true installed app — Android's full "Install app" prompt requires
-  the page to be served over `https://`. See below for that.
+### Smart Script Parsing
+* **Multi-Format Import:** Upload `.pdf`, `.txt`, `.html`, or simply paste your script directly into the app.
+* **Auto-Character Detection:** Automatically identifies characters, groups aliases (e.g., merging "CAPT. SMOLLETT" and "SMOLLETT"), and counts lines.
+* **Character Management:** Easily rename characters, detach mis-grouped aliases, or merge duplicate characters.
 
-### For a real "Install app" prompt on Android (and a nicer install on
-### desktop Chrome/Edge too)
-Android's installability rules require an https-hosted manifest + service
-worker — a `file://` page can't satisfy that no matter what the HTML
-contains. I've included the extra files that make it possible:
+### Script Viewer & Editor
+* **Full Script View:** Read through the entire parsed script with clean, stage-play formatting.
+* **Highlighting:** Tap any line to highlight it for quick reference.
+* **Multi-Select & Delete:** Long-press to enter selection mode. Bulk-delete distracting stage directions, cut scenes, or typo-ridden text blocks (with a 5-second "Undo" safety net).
+* **Instant Search:** Filter the script view to find specific cues or stage directions instantly.
 
-```
-SilkCue.html            → rename to index.html when you deploy
-manifest.webmanifest
-sw.js
-icons/icon-192.png
-icons/icon-512.png
-icons/icon-180.png      (spare, iOS already gets its icon inline)
-icons/icon-32.png
-icons/icon-16.png
-```
+### Installable PWA & Offline Support
+* **Add to Home Screen:** Install it on iOS or Android like a native app.
+* **100% Local Storage:** Your scripts and rehearsal progress are saved in your browser's `localStorage`. Nothing is ever uploaded to a server.
+* **True Offline Mode:** Once the initial voice models and libraries are cached, SilkCue works perfectly without an internet connection.
 
-1. Put all of the above in one folder, **renaming `SilkCue.html` to
-   `index.html`**.
-2. Host that folder on any static https host — GitHub Pages, Netlify,
-   Vercel, Cloudflare Pages, or your own server all work, and all have
-   free tiers. No build step needed, it's already plain static files.
-3. Visit the hosted URL in Chrome on Android → you'll get a proper
-   "Install app" / "Add to Home screen" prompt that installs it as a
-   standalone app with its own icon, and `sw.js` caches the app shell so it
-   keeps working offline after that first visit.
+---
 
-The HTML automatically detects which situation it's in: if it can fetch
-`manifest.webmanifest` next to itself (i.e. you hosted it properly), it uses
-that plus `sw.js`. If not — because you just opened the file directly — it
-builds an equivalent manifest and service worker from data already embedded
-in the HTML, so double-click-and-run still works exactly as before.
+## Installation & Deployment
 
-## A note on the Whisper model
-The on-device engine pulls `Xenova/whisper-tiny.en` from Hugging Face's CDN
-the first time it's used (via transformers.js, loaded from jsDelivr). That
-first download needs internet; after that, the browser caches it and it
-works fully offline. If a user never touches the on-device option, nothing
-is downloaded at all — the browser engine is used silently as before.
+SilkCue is a zero-build, single-file application, but how you run it determines the PWA experience.
+
+### 1. Local Use (Simplest)
+Just double-click `SilkCue.html`. It works fully offline (uploads, rehearsal, settings, both listening engines).
+* **iOS (Safari):** Tap Share then Tap **Add to Home Screen**. It launches full-screen as a standalone app with the theatre-mask icon.
+* **Desktop:** Works perfectly as a local file or via a local server (e.g., `python -m http.server`).
+
+### 2. True PWA Install (Android & Desktop Chrome/Edge)
+Android's installability rules require an **HTTPS-hosted manifest and service worker**. A local `file://` page cannot trigger the native "Install App" prompt on Android. 
+
+To get the true "Install App" experience, host the app alongside its companion files on any static HTTPS host (GitHub Pages, Netlify, Vercel, Cloudflare Pages)
+
+---
+
+(Note: The HTML has a brace. If you just open the file locally without the companion files, it automatically generates an inline manifest and service worker via Blobs so local usage still works perfectly.)
+
+# Info
+
+**Tech Stack**
+Vanilla JavaScript (ES5/ES6) - No React, no Vue, no build step required.
+HTML5 / CSS3 - Custom CSS variables for a beautiful, theatrical "dark mode" UI with a subtle backdrop.
+Web Speech API - Native browser TTS and STT.
+Transformers.js - Powers the on-device Whisper-tiny fallback for offline/private voice recognition in browsers like Firefox.
+PDF.js - Client-side PDF text extraction and layout parsing.
+
+**Privacy & Data**
+No Servers: There is no backend database.
+No Tracking: There are no analytics scripts lol do not worry
+Local Only: All scripts, settings, and rehearsal states are stored exclusively in your browser's localStorage. If you clear your browser data, your scripts will be deleted.
+Audio Privacy: If you select the "On-device" voice engine in Settings (or use Firefox), your microphone audio is processed locally in your browser via WebAssembly. It is never transmitted over the network.
+
+
+**Whisper Model**
+If you select the "On-device" engine (or use a browser without native speech recognition), the app pulls Xenova/whisper-tiny.en from Hugging Face's CDN the first time it is used. That first download (~40MB) requires an internet connection; after that, the browser caches it and it works fully offline. If a user never touches the on-device option, nothing is downloaded at all.
+
+
+
+*License*
+This project is open-source and free to use, modify, and distribute under the MIT License.

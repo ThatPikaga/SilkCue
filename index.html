@@ -509,7 +509,7 @@ function parseStructuredHTML(doc){
       var charEl = el.querySelector ? el.querySelector('.char, [class*="char"]') : null;
       if(charEl){
         var name = charEl.textContent.replace(/\.+\s*$/,"").trim();
-        var rest = text.slice(charEl.textContent.trim().length).replace(/^[\s.:—-]+/,"").trim();
+        var rest = text.slice(charEl.textContent.trim().length).replace(/^[\s.:--]+/,"").trim();
         if(!rest) rest = text;
         rawCues.push({ pageNum:pageNum, type:"line", characterRaw: normName(name), text: rest });
         return;
@@ -846,9 +846,9 @@ var WhisperEngine = (function(){
   }
 
   function formatProgress(p){
-    if(!p) return "Loading on-device voice model — first time only…";
+    if(!p) return "Loading on-device voice model - first time only…";
     if(p.status==="progress" && typeof p.progress==="number"){
-      return "Downloading on-device voice model — "+Math.round(p.progress)+"% (first time only, then it stays offline)";
+      return "Downloading on-device voice model - "+Math.round(p.progress)+"% (first time only, then it stays offline)";
     }
     if(p.status==="ready" || p.status==="done") return null;
     return "Preparing on-device voice model…";
@@ -956,7 +956,7 @@ var WhisperEngine = (function(){
     onUpdate = opts.onUpdate||null; onSilence = opts.onSilence||null;
     onError = opts.onError||null; onStatusCb = opts.onStatus||null;
     active = true; samples = []; sawSpeech = false;
-    if(onStatusCb) onStatusCb(pipelineReady ? null : "Loading on-device voice model — first time only…");
+    if(onStatusCb) onStatusCb(pipelineReady ? null : "Loading on-device voice model - first time only…");
     loadTransformers(function(p){ if(active && onStatusCb) onStatusCb(formatProgress(p)); }).then(function(asr){
       pipelineReady = true; asrFn = asr;
       if(!active) return;
@@ -1077,7 +1077,7 @@ function resumeRehearsal(){
 
 function maybeOfferSkip(afterIndex, cb){
   var s = currentScript();
-  // once we've actually reached/passed a previously-declined target, the suppression is stale — clear it
+  // once we've actually reached/passed a previously-declined target, the suppression is stale - clear it
   if(state.skipDeclinedForIndex!==null && afterIndex > state.skipDeclinedForIndex){
     state.skipDeclinedForIndex = null;
   }
@@ -1122,7 +1122,7 @@ function advance(){
     return;
   }
 
-  // other character's line, or a direction — read it aloud
+  // other character's line, or a direction - read it aloud
   setState({ mode:"speaking", heard:"", matchPct:0 });
   render();
   var speakerId = cue.type==="direction" ? "narrator" : (cue.characterId || cue.characterRaw || "narrator");
@@ -1352,12 +1352,12 @@ function screenOnboarding(){
     '<div class="eyebrow">Welcome to SilkCue</div>' +
     '<h1 class="hero">One quick thing</h1>' +
     (micApi ?
-      '<p class="lede">SilkCue listens for your line and moves on once you\'ve said it. Grant microphone access now so nothing interrupts you mid-scene — you can change this anytime in your browser or device settings.</p>' +
+      '<p class="lede">SilkCue listens for your line and moves on once you\'ve said it. Grant microphone access now so nothing interrupts you mid-scene - you can change this anytime in your browser or device settings.</p>' +
       '<button class="btn btn-primary btn-block" data-act="request-mic" style="max-width:320px">🎙 Enable Microphone</button>' +
       '<div style="height:10px"></div>' +
       '<button class="btn btn-ghost btn-block" data-act="skip-mic" style="max-width:320px">Not now</button>'
       :
-      '<p class="lede">This browser can\'t offer microphone access on this page (it may need to be loaded over https, or installed as an app). You can still rehearse and tap "Done — next line" manually.</p>' +
+      '<p class="lede">This browser can\'t offer microphone access on this page (it may need to be loaded over https, or installed as an app). You can still rehearse and tap "Done - next line" manually.</p>' +
       '<button class="btn btn-primary btn-block" data-act="skip-mic" style="max-width:320px">Continue</button>'
     ) +
     (state.micOnboardError ? '<div class="banner" style="margin-top:18px;text-align:left;max-width:320px">'+esc(state.micOnboardError)+'</div>' : '') +
@@ -1373,7 +1373,7 @@ function requestMicUpfront(){
     strm.getTracks().forEach(function(t){ t.stop(); });
     finishOnboarding();
   }).catch(function(err){
-    setState({ micOnboardError:"Microphone access wasn't granted ("+(err&&err.name||"error")+"). You can still rehearse and tap \"Done — next line\" manually, or allow access later from Settings." });
+    setState({ micOnboardError:"Microphone access wasn't granted ("+(err&&err.name||"error")+"). You can still rehearse and tap \"Done - next line\" manually, or allow access later from Settings." });
   });
 }
 function finishOnboarding(){
@@ -1486,7 +1486,7 @@ function screenScriptView(){
   
   s.cues.forEach(function(cue, idx){
     if(cue.page !== lastPage && cue.page > 0){
-      html += '<div style="text-align:center;color:var(--ink-soft);font-size:11px;margin:20px 0 8px;letter-spacing:.1em">— PAGE '+cue.page+' —</div>';
+      html += '<div style="text-align:center;color:var(--ink-soft);font-size:11px;margin:20px 0 8px;letter-spacing:.1em">- PAGE '+cue.page+' -</div>';
       lastPage = cue.page;
     }
     
@@ -1592,7 +1592,7 @@ function screenRehearsal(){
     html += '</p>';
   }
   if(to>=s.cues.length){
-    html += '<div class="cue-line direction">— end of script —</div>';
+    html += '<div class="cue-line direction">- end of script -</div>';
   }
   html += '</div></div>';
 
@@ -1607,7 +1607,7 @@ function screenRehearsal(){
   }
   if(state.mode==="listening"){
     html += '<button class="btn icon-only btn-ghost" data-act="restart-listening" title="Restart my line">↻</button>';
-    html += '<button class="btn btn-primary" data-act="skip-my-line">Done — next line</button>';
+    html += '<button class="btn btn-primary" data-act="skip-my-line">Done - next line</button>';
   } else {
     html += '<button class="btn btn-ghost" data-act="open-jump">Jump to…</button>';
   }
@@ -1617,7 +1617,7 @@ function screenRehearsal(){
     html += '<div class="banner" style="margin:8px 0 0">Voice cueing isn\'t supported in this browser. Use the button above when you\'re done with your line.</div>';
   }
   if(anyEngine && state.micDenied && state.mode==="listening"){
-    html += '<div class="banner" style="margin:8px 0 0">Couldn\'t start voice cueing — check microphone permissions for this page, then tap ↻ to try again. You can always use the button above to move on.</div>';
+    html += '<div class="banner" style="margin:8px 0 0">Couldn\'t start voice cueing - check microphone permissions for this page, then tap ↻ to try again. You can always use the button above to move on.</div>';
   }
   if(state.mode==="listening" && state.engineStatus){
     html += '<div class="banner info" style="margin:8px 0 0">'+esc(state.engineStatus)+'</div>';
@@ -1645,10 +1645,10 @@ function screenSettings(){
   html += '<div class="settings-row"><div><div class="lbl">Hide my lines</div><div class="desc">Black out your own lines until it\'s your turn, for blind recall</div></div>' +
     '<button class="switch'+(t.hideOwnLines?' on':'')+'" data-act="toggle-hide"><i></i></button></div>';
 
-  html += '<div class="settings-row" style="display:block"><div class="lbl">Reading speed — '+t.rate.toFixed(2)+'×</div>' +
+  html += '<div class="settings-row" style="display:block"><div class="lbl">Reading speed - '+t.rate.toFixed(2)+'×</div>' +
     '<input type="range" min="0.6" max="1.6" step="0.05" value="'+t.rate+'" data-act="set-rate"></div>';
 
-  html += '<div class="settings-row" style="display:block"><div class="lbl">Pause before advancing — '+(t.silenceMs/1000).toFixed(1)+'s</div>' +
+  html += '<div class="settings-row" style="display:block"><div class="lbl">Pause before advancing - '+(t.silenceMs/1000).toFixed(1)+'s</div>' +
     '<div class="desc">How long a silence means you\'ve finished your line</div>' +
     '<input type="range" min="800" max="3000" step="100" value="'+t.silenceMs+'" data-act="set-silence"></div>';
 
@@ -1744,7 +1744,7 @@ function renderModalInto(wrap){
     var others = scr.characters.filter(function(c){return c.id!==ch.id;});
     if(others.length){
       body += '<div class="field-label">Merge into another character</div>' +
-        '<select class="text-input" id="mergeSelect"><option value="">— choose —</option>' +
+        '<select class="text-input" id="mergeSelect"><option value="">- choose -</option>' +
         others.map(function(o){ return '<option value="'+o.id+'">'+esc(o.name)+'</option>'; }).join("") +
         '</select>';
     }
@@ -1846,12 +1846,12 @@ function bindEvents(wrap){
 
       case "recheck-mic":
         if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
-          setState({ modal:{ type:"info", title:"Microphone", msg:"This browser can't request microphone access here — SilkCue may need to be loaded over https (or as an installed app) for voice cueing to work." } });
+          setState({ modal:{ type:"info", title:"Microphone", msg:"This browser can't request microphone access here - SilkCue may need to be loaded over https (or as an installed app) for voice cueing to work." } });
           break;
         }
         navigator.mediaDevices.getUserMedia({ audio:true }).then(function(strm){
           strm.getTracks().forEach(function(t){ t.stop(); });
-          setState({ modal:{ type:"info", title:"Microphone", msg:"Microphone access is granted — you're all set for voice cueing." } });
+          setState({ modal:{ type:"info", title:"Microphone", msg:"Microphone access is granted - you're all set for voice cueing." } });
         }).catch(function(err){
           setState({ modal:{ type:"info", title:"Microphone", msg:"Still couldn't get microphone access ("+(err&&err.name||"error")+"). Check this site's permissions in your browser or system settings." } });
         });
@@ -2134,7 +2134,7 @@ function boot(){
    this file. If it's hosted alongside the companion manifest.webmanifest
    / sw.js / icons/ files this app ships with, those real files are used
    instead, which is what unlocks a true "Install app" prompt on Android
-   and a proper offline cache — a manifest served over http(s) is
+   and a proper offline cache - a manifest served over http(s) is
    required for that; a manifest built at runtime from a blob: URL is
    enough for iOS "Add to Home Screen" and for Android's install
    affordance in most Chromium versions, but real files are more
